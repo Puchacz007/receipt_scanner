@@ -1,13 +1,16 @@
 
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
-import 'package:receipt_scanner/Model/database.dart';
+import 'package:receipt_scanner/Model/DBprovider.dart';
+
 import 'package:receipt_scanner/Model/receipt.dart';
 
 class HomeScreenViewModel with ChangeNotifier {
 
 
   List<Receipt> _receiptList = <Receipt>[];
- Database database = Database();
+
 
 
   List<Receipt>? get receipt {
@@ -19,8 +22,7 @@ class HomeScreenViewModel with ChangeNotifier {
   Future<void> fetchReceiptData(String value) async {
     try {
 
-      final List<Receipt> _receiptList = database.receiptList;
-      this._receiptList = _receiptList.map((item) => Receipt(item.shopName,item.creationDate)).toList();
+      this._receiptList = DBProvider.db.getAllReceipts() as List<Receipt>;
 
     } catch (e) {
       print(e);
@@ -29,8 +31,13 @@ class HomeScreenViewModel with ChangeNotifier {
   }
   addNewReceipt()
   {
-    Receipt receipt = Receipt("", DateTime.now());
-        database.addReceipt(receipt);
+
+  }
+  scanReceipt(File scannedDocument)
+  async {
+
+    Receipt receipt = Receipt(id: (DBProvider.db.getMaxReceiptID() as int) + 1, creationDate: DateTime.now(),scannedDocument: scannedDocument);
+    await DBProvider.db.addReceipt(receipt);
   }
   void setReceiptMedia(Receipt receipt) {
     _receiptList = _receiptList;
