@@ -1,17 +1,16 @@
-
-import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:receipt_scanner/Model/item.dart';
 
 class Receipt
 {
   int id;
-  File scannedDocument;
+  final Uint8List scannedDocument;
 List<Item> items = <Item>[];
-DateTime? creationDate;
-var totalPrice;
-String? shopName;
-Receipt({required this.id,this.shopName,this.creationDate,required this.scannedDocument,this.totalPrice});
+DateTime creationDate;
+double totalPrice;
+String shopName;
+Receipt({this.id,this.shopName = '',this.creationDate,this.scannedDocument,this.totalPrice = -1});
 
 
 
@@ -21,13 +20,13 @@ Receipt({required this.id,this.shopName,this.creationDate,required this.scannedD
       creationDate: json['CREATION_DATE'] != null ?
   DateTime.fromMillisecondsSinceEpoch(json['CREATION_DATE'] as int): null,
       shopName: json['SHOP_NAME'] as String,
-      totalPrice: json['TOTAL_PRICE'] as int,
+      totalPrice: json['TOTAL_PRICE'] as double,
      );
   Map<String, Object> toMap() => <String, Object>{
     'ID': id,
     'SCANNED_DOCUMENT': scannedDocument,
-    'CREATION_DATE': creationDate!.millisecondsSinceEpoch,
-    'SHOP_NAME': shopName as String,
+    'CREATION_DATE': creationDate.millisecondsSinceEpoch,
+    'SHOP_NAME': shopName,
     'TOTAL_PRICE': totalPrice
   };
 

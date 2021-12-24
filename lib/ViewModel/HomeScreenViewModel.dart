@@ -13,7 +13,7 @@ class HomeScreenViewModel with ChangeNotifier {
 
 
 
-  List<Receipt>? get receipt {
+  List<Receipt> get receipt {
     return _receiptList;
   }
 
@@ -33,10 +33,9 @@ class HomeScreenViewModel with ChangeNotifier {
   {
 
   }
-  scanReceipt(File scannedDocument)
+  Future scanReceipt(File scannedFile)
   async {
-
-    Receipt receipt = Receipt(id: (DBProvider.db.getMaxReceiptID() as int) + 1, creationDate: DateTime.now(),scannedDocument: scannedDocument);
+    Receipt receipt = Receipt(id: await DBProvider.db.getMaxReceiptID() + 1, creationDate: DateTime.now(),scannedDocument: await scannedFile.readAsBytes());
     await DBProvider.db.addReceipt(receipt);
   }
   void setReceiptMedia(Receipt receipt) {

@@ -1,12 +1,15 @@
-import 'package:document_scanner/document_scanner.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:receipt_scanner/ViewModel/HomeScreenViewModel.dart';
+import 'package:receipt_scanner/Model/DBprovider.dart';
+import 'package:receipt_scanner/Model/receipt.dart';
+import 'package:receipt_scanner/View/receiptView.dart';
+import 'package:receipt_scanner/View/scannerView.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({Key key}) : super(key: key);
 
 
   @override
@@ -15,7 +18,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
 
-  Future<PermissionStatus>? cameraPermissionFuture;
+  Future<PermissionStatus> cameraPermissionFuture;
+
   @override
   void initState() {
     cameraPermissionFuture = Permission.camera.request();
@@ -33,8 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
         key: const Key('newReceipt'),
         child: const Icon(Icons.add),
         backgroundColor: Colors.blue,
-        onPressed: () {
-          Provider.of<HomeScreenViewModel>(context, listen: false).addNewReceipt();
+        onPressed: () async {
+          Navigator.push<void>(
+            context,
+            MaterialPageRoute<void>(
+              builder: (BuildContext context) => const ScannerView(),
+            ),
+          ).then((value) => setState);
         },
       ),
       appBar: AppBar(
@@ -42,33 +51,57 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body:
 
-      FutureBuilder<PermissionStatus>(
-        future: cameraPermissionFuture,
-        builder: (BuildContext context,
-            AsyncSnapshot<PermissionStatus> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.data!.isGranted)
-              return
-                Container(
-                  child: DocumentScanner(
-                    onDocumentScanned: (ScannedImage scannedImage) {
-                      print("document : " + scannedImage.croppedImage!);
-                      Provider.of<HomeScreenViewModel>(context, listen: false).scanReceipt(scannedImage.getScannedDocumentAsFile());
-                    },
-                  ),
-                );
+    FutureBuilder(
+    future: DBProvider.db.getAllReceipts(),
+    builder: (BuildContext context, AsyncSnapshot snapshot) {
+      List<Widget> children = [];
+      if (snapshot.hasData) {
 
-            else
-              return Center(
-                child: Text("camera permission denied"),
+        final List<Receipt> receiptList = snapshot.data;
+        for (Receipt receipt in receiptList)
+          {
+            children.add(
+                  Card(
+                      child: ListTile(
+                        title: Center(
+                          child: Text('${receipt.creationDate.toString()}'),
+                        ),
+                        onLongPress: ()
+                        {
+                          Navigator.push<void>(
+                            context,
+                            MaterialPageRoute<void>(
+                              builder: (BuildContext context) => ReceiptView(receipt: receipt,),
+                            ),
+                          ).then((value) => setState);
+                        },
+                  )
+
+                  )
               );
-          } else {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
           }
-        },
-    ),
+
+      }
+      else {
+        children = const <Widget>[
+          SizedBox(
+            width: 60,
+            height: 60,
+            child: CircularProgressIndicator(),
+
+          )
+        ];
+      }
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: children,
+        ),
+      );
+    }
+
+      ),
+
     );
   }
 }

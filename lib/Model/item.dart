@@ -4,7 +4,7 @@ class Item
   int quantity;
   String name;
   int receiptID;
-  Item({required this.price,required this.quantity,required this.name,required this.receiptID});
+  Item({this.price,this.quantity,this.name,this.receiptID});
 
   factory Item.fromMap(Map<String, dynamic> json) => Item(
     name: json['NAME'] as String,

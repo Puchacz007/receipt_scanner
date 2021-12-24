@@ -19,7 +19,10 @@ class MyApp extends StatelessWidget {
       ),
       home: ChangeNotifierProvider(
         create: (context) => HomeScreenViewModel(),
-        child: HomeScreen(),
+        child:
+    MaterialApp(
+     home:   HomeScreen()
+    ),
       )
     );
   }
